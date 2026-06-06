@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #050a0f;
+            --surface: #0a1520;
+            --border: rgba(0, 200, 255, 0.15);
+            --accent: #00c8ff;
+            --text: #c8e8f0;
+            --muted: #4a7a8a;
+            --danger: #ff4a6e;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* scan line overlay for techy feel */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 200, 255, 0.015) 2px,
+                rgba(0, 200, 255, 0.015) 4px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 700px;
+        }
+
+        /* ── SEARCH BAR ── */
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 15px;
+            padding: 12px 18px;
+            outline: none;
+            transition: border-color 0.2s;
+            letter-spacing: 1px;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--muted);
+        }
+
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+
+        .search-bar button {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+            padding: 12px 24px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .search-bar button:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        /* ── CURRENT WEATHER CARD ── */
+        .current {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 36px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* glowing top line */
+        .current::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .current-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .city-name {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .current-desc {
+            font-size: 18px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .temp-big {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 80px;
+            line-height: 1;
+            color: var(--accent);
+            text-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
+        }
+
+        .temp-big span {
+            font-size: 36px;
+            color: var(--muted);
+        }
+
+        /* 4 stat boxes at the bottom of the card */
+        .current-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+            margin-top: 10px;
+        }
+
+        .stat {
+            padding: 16px 0;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ── 5-DAY FORECAST ── */
+        .forecast-title {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .forecast {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .forecast-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 20px 10px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .forecast-card:hover {
+            border-color: var(--accent);
+        }
+
+        .forecast-day {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .forecast-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .forecast-high {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .forecast-low {
+            font-size: 14px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ── ERROR / LOADING MESSAGES ── */
+        .message {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .message.error { color: var(--danger); }
+        .message.loading { color: var(--accent); }
+        .message.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="app">
+
+        <!-- Search -->
+        <div class="search-bar">
+            <input type="text" id="cityInput" placeholder="ENTER CITY..." />
+            <button id="searchBtn">SCAN</button>
+        </div>
+
+        <!-- Status messages - shown/hidden by JS later -->
+        <div class="message loading" id="loading">// FETCHING DATA...</div>
+        <div class="message error" id="error">// CITY NOT FOUND</div>
+
+        <!-- Current weather - placeholder data so you can see the layout -->
+        <div class="current">
+            <div class="current-top">
+                <div id="weatherInfo">
+                    <div class="city-name" id="cityName">SARAJEVO, BA</div>
+                    <div class="current-desc" id ="currentDesc">PARTLY CLOUDY</div>
+                </div>
+                <div class="temp-big" id="tempBig">18<span>°C</span></div>
+            </div>
+            <div class="current-stats" id="weatherInfo2">
+                <div class="stat">
+                    <div class="stat-label" >Feels Like</div>
+                    <div class="stat-value" id="feelsLike">16°</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Humidity</div>
+                    <div class="stat-value" id="humidity">62%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Wind</div>
+                    <div class="stat-value" id="wind">4 m/s</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Pressure</div>
+                    <div class="stat-value" id="pressure">1013 hPa</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5-day forecast - placeholder -->
+        <div class="forecast-section">
+            <div class="forecast-title">// 5-DAY FORECAST</div>
+            <div class="forecast" id="forecast">
+                <div class="forecast-card">
+                    <div class="forecast-day" id="forecastDay1">MON</div>
+                    <span class="forecast-icon" id="forecastIcon1">☀️</span>
+                    <div class="forecast-high" id="forecastHigh1">21°</div>
+                    <div class="forecast-low" id="forecastLow1">12°</div>
+                </div>
+                <div class="forecast-card">
+                    <div class="forecast-day" id="forecastDay2">TUE</div>
+                    <span class="forecast-icon" id="forecastIcon2">🌦</span>
+                    <div class="forecast-high" id="forecastHigh2">17°</div>
+                    <div class="forecast-low" id="forecastLow2">10°</div>
+                </div>
+                <div class="forecast-card">
+                    <div class="forecast-day" id="forecastDay3">WED</div>
+                    <span class="forecast-icon" id="forecastIcon3">🌧</span>
+                    <div class="forecast-high" id="forecastHigh3">14°</div>
+                    <div class="forecast-low" id="forecastLow3">9°</div>
+                </div>
+                <div class="forecast-card">
+                    <div class="forecast-day" id="forecastDay4">THU</div>
+                    <span class="forecast-icon" id="forecastIcon4">☁️</span>
+                    <div class="forecast-high" id="forecastHigh4">16°</div>
+                    <div class="forecast-low" id="forecastLow4">11°</div>
+                </div>
+                <div class="forecast-card" >
+                    <div class="forecast-day" id="forecastDay5">FRI</div>
+                    <span class="forecast-icon" id="forecastIcon5">☀️</span>
+                    <div class="forecast-high" id="forecastHigh5">22°</div>
+                    <div class="forecast-low" id="forecastLow5">13°</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- weather.js goes here once you build it -->
+    <script src="wheatherApp.js"></script>
+</body>
+</html>
